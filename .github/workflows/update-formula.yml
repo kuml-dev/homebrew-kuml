@@ -1,0 +1,92 @@
+name: Update kuml formula
+
+# Triggered by the kuml-dev/kuml release workflow via repository_dispatch.
+# Payload (client_payload):
+#   version  — semver without leading 'v', e.g. "0.1.0"
+#   url      — full download URL of the release zip
+#   sha256   — sha256 of that zip
+#
+# Also supports manual dispatch for emergency bumps.
+
+on:
+  repository_dispatch:
+    types: [kuml-release]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version, e.g. 0.1.0'
+        required: true
+      url:
+        description: 'Full download URL of the release zip'
+        required: true
+      sha256:
+        description: 'sha256 of the release zip'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout tap
+        uses: actions/checkout@v4
+
+      - name: Resolve payload
+        id: payload
+        run: |
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            echo "version=${{ github.event.client_payload.version }}" >> $GITHUB_OUTPUT
+            echo "url=${{ github.event.client_payload.url }}"         >> $GITHUB_OUTPUT
+            echo "sha256=${{ github.event.client_payload.sha256 }}"   >> $GITHUB_OUTPUT
+          else
+            echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+            echo "url=${{ inputs.url }}"         >> $GITHUB_OUTPUT
+            echo "sha256=${{ inputs.sha256 }}"   >> $GITHUB_OUTPUT
+          fi
+
+      - name: Validate inputs
+        run: |
+          v='${{ steps.payload.outputs.version }}'
+          [[ "$v" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::Invalid version: $v"; exit 1; }
+          sha='${{ steps.payload.outputs.sha256 }}'
+          [[ "$sha" =~ ^[a-f0-9]{64}$ ]] || { echo "::error::Invalid sha256: $sha"; exit 1; }
+
+      - name: Rewrite Formula/kuml.rb
+        run: |
+          python3 - <<'PY'
+          import os, re, pathlib
+
+          version = os.environ["VERSION"]
+          url     = os.environ["URL"]
+          sha     = os.environ["SHA256"]
+
+          p = pathlib.Path("Formula/kuml.rb")
+          src = p.read_text()
+
+          def replace(pattern, repl, text):
+              new, n = re.subn(pattern, repl, text)
+              if n != 1:
+                  raise SystemExit(f"could not patch /{pattern}/ — matched {n} times")
+              return new
+
+          src = replace(r'url\s+"[^"]+"',     f'url "{url}"',         src)
+          src = replace(r'sha256\s+"[^"]+"',  f'sha256 "{sha}"',      src)
+          src = replace(r'version\s+"[^"]+"', f'version "{version}"', src)
+
+          p.write_text(src)
+          print(p.read_text())
+          PY
+        env:
+          VERSION: ${{ steps.payload.outputs.version }}
+          URL: ${{ steps.payload.outputs.url }}
+          SHA256: ${{ steps.payload.outputs.sha256 }}
+
+      - name: Commit and push
+        run: |
+          git config user.name  "kuml-bot"
+          git config user.email "bot@kuml.dev"
+          git add Formula/kuml.rb
+          git commit -m "kuml ${{ steps.payload.outputs.version }}"
+          git push
