@@ -1,0 +1,47 @@
+= homebrew-kuml
+:icons: font
+:source-highlighter: rouge
+
+https://brew.sh[Homebrew] tap for *https://github.com/kuml-dev/kuml[kUML]* —
+a Kotlin-based UML/C4 modelling and rendering tool.
+
+== Install
+
+[source,bash]
+----
+brew tap kuml-dev/kuml
+brew install kuml
+----
+
+Then verify:
+
+[source,bash]
+----
+kuml --help
+----
+
+== Update
+
+[source,bash]
+----
+brew update
+brew upgrade kuml
+----
+
+== How this tap is maintained
+
+The formula `Formula/kuml.rb` is updated automatically by the main repo's
+release workflow on every `v*.*.*` tag — see
+link:.github/workflows/update-formula.yml[`update-formula.yml`].
+
+If you need to bump it manually:
+
+[source,bash]
+----
+brew bump-formula-pr --url=URL --sha256=SHA256 kuml
+----
+
+== License
+
+The formula itself is Apache-2.0 (see link:LICENSE[LICENSE]). The kUML
+project it installs is also Apache-2.0.
