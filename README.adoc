@@ -30,9 +30,9 @@ brew upgrade kuml
 
 == How this tap is maintained
 
-The formula `Formula/kuml.rb` is updated automatically by the main repo's
-release workflow on every `v*.*.*` tag — see
-link:.github/workflows/update-formula.yml[`update-formula.yml`].
+The formula `Formula/kuml.rb` is updated automatically by the
+https://github.com/kuml-dev/kuml[`kuml-dev/kuml`] release workflow on every
+`v*.*.*` tag — see link:.github/workflows/update-formula.yml[`update-formula.yml`].
 
 If you need to bump it manually:
 
