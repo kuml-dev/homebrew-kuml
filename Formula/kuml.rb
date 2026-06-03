@@ -1,17 +1,38 @@
 class Kuml < Formula
   desc "Kotlin-based UML/C4 modelling and rendering tool"
   homepage "https://github.com/kuml-dev/kuml"
-
-  # url, sha256 and version are rewritten automatically by update-formula.yml
-  # in this tap, triggered by a repository_dispatch event from kuml-dev/kuml's
-  # release workflow on every `v*.*.*` tag.
-  url "https://github.com/kuml-dev/kUML/releases/download/v0.1.1/kuml-runtime-0.1.1.zip"
-  sha256 "772f9dc165836e0acd7357ecdbe9ce4e998be298ac214c3fa0fbcd31c2a0eab9"
   version "0.1.1"
   license "Apache-2.0"
 
-  # The kuml-runtime-<version>.zip is a self-contained bundle: app jars +
-  # a jlink-built Java 21 runtime. No external JDK dependency.
+  # The kuml-runtime-<version>-<os>-<arch>.zip is a self-contained bundle:
+  # app jars + a jlink-built Java 21 runtime. No external JDK dependency.
+  #
+  # jlink produces a JRE for the host platform it's invoked on, so we must
+  # ship one zip per target. Older releases (≤ 0.1.1) shipped a single
+  # zip built on a Linux runner — that zip is broken on macOS. The 0.1.1
+  # placeholders below are kept only to document the layout; they MUST
+  # be overwritten by a re-release of 0.1.1 (or the next tag) that runs
+  # the matrixed release.yml in kuml-dev/kuml.
+  #
+  # url/sha256 blocks are rewritten automatically by update-formula.yml
+  # in this tap, triggered by a repository_dispatch event from
+  # kuml-dev/kuml's release workflow on every `v*.*.*` tag.
+
+  on_macos do
+    on_intel do
+      url "https://github.com/kuml-dev/kUML/releases/download/v0.1.1/kuml-runtime-0.1.1-darwin-x86_64.zip"
+      sha256 "0000000000000000000000000000000000000000000000000000000000000000"
+    end
+    on_arm do
+      url "https://github.com/kuml-dev/kUML/releases/download/v0.1.1/kuml-runtime-0.1.1-darwin-arm64.zip"
+      sha256 "0000000000000000000000000000000000000000000000000000000000000000"
+    end
+  end
+
+  on_linux do
+    url "https://github.com/kuml-dev/kUML/releases/download/v0.1.1/kuml-runtime-0.1.1-linux-x86_64.zip"
+    sha256 "0000000000000000000000000000000000000000000000000000000000000000"
+  end
 
   def install
     # The zip extracts as kuml-<version>/{bin,lib,runtime}/, but Homebrew's

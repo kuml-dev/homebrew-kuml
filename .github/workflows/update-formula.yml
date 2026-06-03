@@ -2,9 +2,19 @@ name: Update kuml formula
 
 # Triggered by the kuml-dev/kuml release workflow via repository_dispatch.
 # Payload (client_payload):
-#   version  — semver without leading 'v', e.g. "0.1.0"
-#   url      — full download URL of the release zip
-#   sha256   — sha256 of that zip
+#   version    — semver without leading 'v', e.g. "0.1.0"
+#   platforms  — JSON object keyed by target tuple, value { url, sha256 }
+#                Required targets: darwin-x86_64, darwin-arm64, linux-x86_64
+#
+# Example:
+#   {
+#     "version": "0.2.0",
+#     "platforms": {
+#       "darwin-x86_64": { "url": "...", "sha256": "abc..." },
+#       "darwin-arm64":  { "url": "...", "sha256": "def..." },
+#       "linux-x86_64":  { "url": "...", "sha256": "123..." }
+#     }
+#   }
 #
 # Also supports manual dispatch for emergency bumps.
 
@@ -16,11 +26,8 @@ on:
       version:
         description: 'Version, e.g. 0.1.0'
         required: true
-      url:
-        description: 'Full download URL of the release zip'
-        required: true
-      sha256:
-        description: 'sha256 of the release zip'
+      platforms_json:
+        description: 'JSON: {"darwin-x86_64":{"url":"…","sha256":"…"}, "darwin-arm64":{…}, "linux-x86_64":{…}}'
         required: true
 
 permissions:
@@ -37,51 +44,91 @@ jobs:
         id: payload
         run: |
           if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
-            echo "version=${{ github.event.client_payload.version }}" >> $GITHUB_OUTPUT
-            echo "url=${{ github.event.client_payload.url }}"         >> $GITHUB_OUTPUT
-            echo "sha256=${{ github.event.client_payload.sha256 }}"   >> $GITHUB_OUTPUT
+            VERSION='${{ github.event.client_payload.version }}'
+            PLATFORMS='${{ toJSON(github.event.client_payload.platforms) }}'
           else
-            echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
-            echo "url=${{ inputs.url }}"         >> $GITHUB_OUTPUT
-            echo "sha256=${{ inputs.sha256 }}"   >> $GITHUB_OUTPUT
+            VERSION='${{ inputs.version }}'
+            PLATFORMS='${{ inputs.platforms_json }}'
           fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          # Multi-line outputs need the heredoc-style delimiter syntax.
+          {
+            echo "platforms<<__END__"
+            echo "$PLATFORMS"
+            echo "__END__"
+          } >> $GITHUB_OUTPUT
 
       - name: Validate inputs
+        env:
+          VERSION: ${{ steps.payload.outputs.version }}
+          PLATFORMS: ${{ steps.payload.outputs.platforms }}
         run: |
-          v='${{ steps.payload.outputs.version }}'
-          [[ "$v" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::Invalid version: $v"; exit 1; }
-          sha='${{ steps.payload.outputs.sha256 }}'
-          [[ "$sha" =~ ^[a-f0-9]{64}$ ]] || { echo "::error::Invalid sha256: $sha"; exit 1; }
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::Invalid version: $VERSION"; exit 1; }
+          python3 - <<'PY'
+          import json, os, re, sys
+          plat = json.loads(os.environ["PLATFORMS"])
+          required = {"darwin-x86_64", "darwin-arm64", "linux-x86_64"}
+          missing = required - plat.keys()
+          if missing:
+              sys.exit(f"::error::Missing platforms: {sorted(missing)}")
+          sha_re = re.compile(r"^[a-f0-9]{64}$")
+          for target, entry in plat.items():
+              if not entry.get("url", "").startswith("https://"):
+                  sys.exit(f"::error::Bad url for {target}: {entry.get('url')}")
+              if not sha_re.match(entry.get("sha256", "")):
+                  sys.exit(f"::error::Bad sha256 for {target}: {entry.get('sha256')}")
+          PY
 
       - name: Rewrite Formula/kuml.rb
+        env:
+          VERSION: ${{ steps.payload.outputs.version }}
+          PLATFORMS: ${{ steps.payload.outputs.platforms }}
         run: |
           python3 - <<'PY'
-          import os, re, pathlib
+          import json, os, pathlib, re
 
-          version = os.environ["VERSION"]
-          url     = os.environ["URL"]
-          sha     = os.environ["SHA256"]
+          version   = os.environ["VERSION"]
+          platforms = json.loads(os.environ["PLATFORMS"])
 
-          p = pathlib.Path("Formula/kuml.rb")
+          p   = pathlib.Path("Formula/kuml.rb")
           src = p.read_text()
 
-          def replace(pattern, repl, text):
-              new, n = re.subn(pattern, repl, text)
+          def replace_one(pattern, repl, text, *, label):
+              new, n = re.subn(pattern, repl, text, flags=re.DOTALL)
               if n != 1:
-                  raise SystemExit(f"could not patch /{pattern}/ — matched {n} times")
+                  raise SystemExit(f"could not patch {label} — matched {n} times")
               return new
 
-          src = replace(r'url\s+"[^"]+"',     f'url "{url}"',         src)
-          src = replace(r'sha256\s+"[^"]+"',  f'sha256 "{sha}"',      src)
-          src = replace(r'version\s+"[^"]+"', f'version "{version}"', src)
+          # Version line — single occurrence, top of the formula.
+          src = replace_one(r'version\s+"[^"]+"', f'version "{version}"', src, label="version")
+
+          # macOS Intel block
+          src = replace_one(
+              r'(on_intel do\s+url\s+")[^"]+("\s+sha256\s+")[^"]+(")',
+              rf'\g<1>{platforms["darwin-x86_64"]["url"]}\g<2>{platforms["darwin-x86_64"]["sha256"]}\g<3>',
+              src,
+              label="darwin-x86_64",
+          )
+
+          # macOS arm64 block
+          src = replace_one(
+              r'(on_arm do\s+url\s+")[^"]+("\s+sha256\s+")[^"]+(")',
+              rf'\g<1>{platforms["darwin-arm64"]["url"]}\g<2>{platforms["darwin-arm64"]["sha256"]}\g<3>',
+              src,
+              label="darwin-arm64",
+          )
+
+          # Linux block — top-level on_linux do … end
+          src = replace_one(
+              r'(on_linux do\s+url\s+")[^"]+("\s+sha256\s+")[^"]+(")',
+              rf'\g<1>{platforms["linux-x86_64"]["url"]}\g<2>{platforms["linux-x86_64"]["sha256"]}\g<3>',
+              src,
+              label="linux-x86_64",
+          )
 
           p.write_text(src)
           print(p.read_text())
           PY
-        env:
-          VERSION: ${{ steps.payload.outputs.version }}
-          URL: ${{ steps.payload.outputs.url }}
-          SHA256: ${{ steps.payload.outputs.sha256 }}
 
       - name: Commit and push
         run: |
