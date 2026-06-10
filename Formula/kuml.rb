@@ -21,17 +21,17 @@ class Kuml < Formula
   on_macos do
     on_intel do
       url "https://github.com/kuml-dev/kUML/releases/download/v0.6.0/kuml-runtime-0.6.0-darwin-x86_64.zip"
-      sha256 "380c4a2b8d3c26eba57232d3ac3a1914c64f1863c46f080aae4790945e63f23c"
+      sha256 "aa72cbeffc0a5a79e28a0422544e5ea97130283001eac105f18a88d3ada33412"
     end
     on_arm do
       url "https://github.com/kuml-dev/kUML/releases/download/v0.6.0/kuml-runtime-0.6.0-darwin-arm64.zip"
-      sha256 "25ba3bbb29e2eec762b7eab9b0b188b016bb6fe5486a22a9d6fb8362e83afa5a"
+      sha256 "cef6692be1d6e86ab0da8074bb2388dbb2f936de1cff942194ff4b3918f3294c"
     end
   end
 
   on_linux do
     url "https://github.com/kuml-dev/kUML/releases/download/v0.6.0/kuml-runtime-0.6.0-linux-x86_64.zip"
-    sha256 "80a5537def5f69eb2af425ed1f57b1be75641fa1eea493c16df5112a6e44003c"
+    sha256 "b08ff876ab2890b630284d57e392456c972334b395310d3f617343ca384c7381"
   end
 
   def install
