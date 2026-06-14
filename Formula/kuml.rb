@@ -1,7 +1,7 @@
 class Kuml < Formula
   desc "Kotlin-based UML/C4 modelling and rendering tool"
   homepage "https://github.com/kuml-dev/kuml"
-  version "0.9.0"
+  version "0.10.0"
   license "Apache-2.0"
 
   # The kuml-runtime-<version>-<os>-<arch>.zip is a self-contained bundle:
@@ -20,18 +20,18 @@ class Kuml < Formula
 
   on_macos do
     on_intel do
-      url "https://github.com/kuml-dev/kUML/releases/download/v0.9.0/kuml-runtime-0.9.0-darwin-x86_64.zip"
-      sha256 "32bfbb30faf7c2665d2402b3a9e55775bc0800ef72e7561da1d7a7ba388b6610"
+      url "https://github.com/kuml-dev/kUML/releases/download/v0.10.0/kuml-runtime-0.10.0-darwin-x86_64.zip"
+      sha256 "8eba456f4cf98452249e5fd3a9fb48bf2146f099e70bbdae58c4e0aee75fb834"
     end
     on_arm do
-      url "https://github.com/kuml-dev/kUML/releases/download/v0.9.0/kuml-runtime-0.9.0-darwin-arm64.zip"
-      sha256 "ce44a197f1677d010670969e09daafc4e1a83ccaad8d20f09c4579dc23a62f23"
+      url "https://github.com/kuml-dev/kUML/releases/download/v0.10.0/kuml-runtime-0.10.0-darwin-arm64.zip"
+      sha256 "d612f0d9354d71c49610c213dbfd57cd23748801d318fbd7b050ef9009064911"
     end
   end
 
   on_linux do
-    url "https://github.com/kuml-dev/kUML/releases/download/v0.9.0/kuml-runtime-0.9.0-linux-x86_64.zip"
-    sha256 "bd7464df82557c49532e2ac1c3e4be616007716ce4265561bf83441e57f784a0"
+    url "https://github.com/kuml-dev/kUML/releases/download/v0.10.0/kuml-runtime-0.10.0-linux-x86_64.zip"
+    sha256 "c74c1a12966f79f12aef51f99764e2a7560f3b2a752696b41d63e879ad5906fb"
   end
 
   def install
