@@ -5,6 +5,8 @@
 https://brew.sh[Homebrew] tap for *https://github.com/kuml-dev/kuml[kUML]* —
 a Kotlin-based UML/C4 modelling and rendering tool.
 
+*Project links:* https://kuml.dev[Website] · https://docs.kuml.dev[Handbook] · https://github.com/kuml-dev/kUML[Source]
+
 == Install
 
 [source,bash]
