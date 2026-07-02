@@ -1,0 +1,105 @@
+name: Update kuml-desktop cask
+
+# Triggered by the kuml-dev/kuml release workflow via repository_dispatch
+# (V3.2.14 — desktop-dmg + dispatch-tap-cask jobs in release.yml).
+# Payload (client_payload):
+#   version — semver without leading 'v', e.g. "0.23.0"
+#   url     — GitHub Release download URL for the macOS DMG
+#   sha256  — SHA-256 of the DMG
+#
+# Example:
+#   {
+#     "version": "0.23.0",
+#     "url":     "https://github.com/kuml-dev/kUML/releases/download/v0.23.0/kuml-desktop-0.23.0.dmg",
+#     "sha256":  "abc123..."
+#   }
+#
+# Also supports manual dispatch for emergency bumps.
+
+on:
+  repository_dispatch:
+    types: [kuml-desktop-release]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version, e.g. 0.23.0'
+        required: true
+      url:
+        description: 'DMG download URL'
+        required: true
+      sha256:
+        description: 'SHA-256 of the DMG'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout tap
+        uses: actions/checkout@v4
+
+      - name: Resolve payload
+        id: payload
+        run: |
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            VERSION='${{ github.event.client_payload.version }}'
+            URL='${{ github.event.client_payload.url }}'
+            SHA256='${{ github.event.client_payload.sha256 }}'
+          else
+            VERSION='${{ inputs.version }}'
+            URL='${{ inputs.url }}'
+            SHA256='${{ inputs.sha256 }}'
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "url=$URL" >> $GITHUB_OUTPUT
+          echo "sha256=$SHA256" >> $GITHUB_OUTPUT
+
+      - name: Validate inputs
+        env:
+          VERSION: ${{ steps.payload.outputs.version }}
+          URL: ${{ steps.payload.outputs.url }}
+          SHA256: ${{ steps.payload.outputs.sha256 }}
+        run: |
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::Invalid version: $VERSION"; exit 1; }
+          [[ "$URL" == https://* ]] || { echo "::error::Bad url: $URL"; exit 1; }
+          [[ "$SHA256" =~ ^[a-f0-9]{64}$ ]] || { echo "::error::Bad sha256: $SHA256"; exit 1; }
+
+      - name: Rewrite Casks/kuml-desktop.rb
+        env:
+          VERSION: ${{ steps.payload.outputs.version }}
+          SHA256: ${{ steps.payload.outputs.sha256 }}
+        run: |
+          python3 - <<'PY'
+          import os, pathlib, re
+
+          version = os.environ["VERSION"]
+          sha256  = os.environ["SHA256"]
+
+          p   = pathlib.Path("Casks/kuml-desktop.rb")
+          src = p.read_text()
+
+          def replace_one(pattern, repl, text, *, label):
+              new, n = re.subn(pattern, repl, text, count=1)
+              if n != 1:
+                  raise SystemExit(f"could not patch {label} — matched {n} times")
+              return new
+
+          # version and sha256 are the only fields that change per release —
+          # the url template already interpolates #{version}, so it needs no rewrite.
+          src = replace_one(r'version\s+"[^"]+"', f'version "{version}"', src, label="version")
+          src = replace_one(r'sha256\s+"[^"]+"', f'sha256 "{sha256}"', src, label="sha256")
+
+          p.write_text(src)
+          print(p.read_text())
+          PY
+
+      - name: Commit and push
+        run: |
+          git config user.name  "kuml-bot"
+          git config user.email "bot@kuml.dev"
+          git add Casks/kuml-desktop.rb
+          git commit -m "kuml-desktop ${{ steps.payload.outputs.version }}"
+          git push

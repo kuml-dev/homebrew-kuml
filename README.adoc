@@ -22,12 +22,27 @@ Then verify:
 kuml --help
 ----
 
+=== kuml-desktop (Cask, macOS only)
+
+The Compose Multiplatform desktop app is distributed as a
+https://docs.brew.sh/Cask-Cookbook[Homebrew Cask]:
+
+[source,bash]
+----
+brew install --cask kuml-dev/kuml/kuml-desktop
+----
+
+`kuml-desktop` is unsigned (no Apple Developer notarisation yet — Phase 2).
+On first launch, macOS Gatekeeper blocks it; see the cask's `caveats` output
+for the one-time workaround.
+
 == Update
 
 [source,bash]
 ----
 brew update
 brew upgrade kuml
+brew upgrade --cask kuml-desktop
 ----
 
 == How this tap is maintained
@@ -36,11 +51,17 @@ The formula `Formula/kuml.rb` is updated automatically by the
 https://github.com/kuml-dev/kuml[`kuml-dev/kuml`] release workflow on every
 `v*.*.*` tag — see link:.github/workflows/update-formula.yml[`update-formula.yml`].
 
-If you need to bump it manually:
+The cask `Casks/kuml-desktop.rb` is updated the same way, via a separate
+`repository_dispatch` event (`kuml-desktop-release`) from the `desktop-dmg` +
+`dispatch-tap-cask` jobs in that repo's `release.yml` — see
+link:.github/workflows/update-cask.yml[`update-cask.yml`].
+
+If you need to bump either manually:
 
 [source,bash]
 ----
 brew bump-formula-pr --url=URL --sha256=SHA256 kuml
+brew bump-cask-pr --url=URL --sha256=SHA256 kuml-desktop
 ----
 
 == License
