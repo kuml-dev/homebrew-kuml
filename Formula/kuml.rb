@@ -34,6 +34,16 @@ class Kuml < Formula
     sha256 "d2221586e073889d6867e7020b84977481318e96b0a487f4848a712490cc5425"
   end
 
+  # Without this, Homebrew's local install step (Keg#fix_dynamic_linkage) rewrites
+  # every @rpath-based dylib ID to an absolute Cellar/opt path, which invalidates
+  # our Developer-ID signature on runtime/lib/libjli.dylib. Homebrew then re-signs
+  # it ad hoc since it has no access to the real cert, and dyld's library
+  # validation subsequently refuses to load it into the (still correctly, real-
+  # signed) java binary — "different Team IDs" crash on launch. preserve_rpath
+  # tells Homebrew to leave @rpath dylib IDs alone, so our real signature survives
+  # brew install/upgrade untouched. macOS-only concept; harmless no-op on Linux.
+  preserve_rpath
+
   def install
     # The zip extracts as kuml-<version>/{bin,lib,runtime}/, but Homebrew's
     # extract step already CDs into that single top-level directory before
