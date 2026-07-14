@@ -21,17 +21,17 @@ class Kuml < Formula
   on_macos do
     on_intel do
       url "https://github.com/kuml-dev/kUML/releases/download/v0.36.0/kuml-runtime-0.36.0-darwin-x86_64.zip"
-      sha256 "d6e8c67ec0bbd142603afe8ce5307cf67de4d5b3f240d58bfc7891ea0233e49d"
+      sha256 "cccddba303d8151017f651eb4c13560e48ab9882a1a1e799fe4219c0b4b80822"
     end
     on_arm do
       url "https://github.com/kuml-dev/kUML/releases/download/v0.36.0/kuml-runtime-0.36.0-darwin-arm64.zip"
-      sha256 "d4f4b02c107378d3e68cb269b0b7348698e674674399d881a53f205dada61784"
+      sha256 "b92ed349137849ec9601019babf6da74770982d90b93f4949ac8c401be60ae20"
     end
   end
 
   on_linux do
     url "https://github.com/kuml-dev/kUML/releases/download/v0.36.0/kuml-runtime-0.36.0-linux-x86_64.zip"
-    sha256 "eaf6ebde478f7adcc33312b98aa5a047f3e6b9b87e915f72a975a2b28fedf970"
+    sha256 "065689178dc9765bdb016f6a906f5fd2349e289e1048d4d7f5045317e1e89141"
   end
 
   # Without this, Homebrew's local install step (Keg#fix_dynamic_linkage) rewrites
