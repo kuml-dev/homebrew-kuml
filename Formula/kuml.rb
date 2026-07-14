@@ -1,7 +1,7 @@
 class Kuml < Formula
   desc "Kotlin-based UML/C4 modelling and rendering tool"
   homepage "https://github.com/kuml-dev/kuml"
-  version "0.34.0"
+  version "0.35.0"
   license "Apache-2.0"
 
   # The kuml-runtime-<version>-<os>-<arch>.zip is a self-contained bundle:
@@ -20,18 +20,18 @@ class Kuml < Formula
 
   on_macos do
     on_intel do
-      url "https://github.com/kuml-dev/kUML/releases/download/v0.34.0/kuml-runtime-0.34.0-darwin-x86_64.zip"
-      sha256 "42e936294515e8c3873a04e862714802dabde90577e2f4b73e6b31efca5ea7fa"
+      url "https://github.com/kuml-dev/kUML/releases/download/v0.35.0/kuml-runtime-0.35.0-darwin-x86_64.zip"
+      sha256 "bcd82606b2b7ef2560e07aa3ceb5cb1ac3256c1cc049c5870437cf76438b7236"
     end
     on_arm do
-      url "https://github.com/kuml-dev/kUML/releases/download/v0.34.0/kuml-runtime-0.34.0-darwin-arm64.zip"
-      sha256 "4de817b5e213bace2387deb8e51ab815d4f9ce3ccd2d754ce38bd466e485d22f"
+      url "https://github.com/kuml-dev/kUML/releases/download/v0.35.0/kuml-runtime-0.35.0-darwin-arm64.zip"
+      sha256 "7f5008d43edded2f59400d62773d4c5976463411d3d836b4ffcc5e067ac71b0f"
     end
   end
 
   on_linux do
-    url "https://github.com/kuml-dev/kUML/releases/download/v0.34.0/kuml-runtime-0.34.0-linux-x86_64.zip"
-    sha256 "78483785ef11577def1173c0545849b977909944e62f141242a6ef264c478c69"
+    url "https://github.com/kuml-dev/kUML/releases/download/v0.35.0/kuml-runtime-0.35.0-linux-x86_64.zip"
+    sha256 "175e30890f8a6f3f15a50f80ee83b78ac4642e9f8f00f40e2825f1a625d7c779"
   end
 
   # Without this, Homebrew's local install step (Keg#fix_dynamic_linkage) rewrites
