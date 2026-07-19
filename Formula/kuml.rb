@@ -53,18 +53,27 @@ class Kuml < Formula
     # kuml-mcp installDist, kept separate from bin/lib to avoid duplicate-jar
     # collisions with the CLI's own kuml-core-* jars) plus a thin bin/kuml-mcp
     # wrapper that execs into mcp/bin/kuml-mcp.
+    #
+    # 2026-07-19: same pattern for a lsp/ subtree (self-contained kuml-lsp
+    # installDist) plus a thin bin/kuml-lsp wrapper that execs into
+    # lsp/bin/kuml-lsp. Closes the gap where the VS Code / editor-agnostic
+    # language server was buildable from source only, never actually shipped
+    # in any distribution channel.
     libexec.install Dir["*"]
     # Defensive chmod: pre-v0.2.0 release artefacts shipped without exec
     # bits inside the zip. Newer builds set 0755 on bin/kuml, bin/kuml-mcp,
-    # mcp/bin/kuml-mcp and the runtime/bin/* binaries already, so this is a
-    # no-op for them.
+    # bin/kuml-lsp, mcp/bin/kuml-mcp, lsp/bin/kuml-lsp and the runtime/bin/*
+    # binaries already, so this is a no-op for them.
     chmod 0755, libexec/"bin/kuml"
     chmod 0755, libexec/"bin/kuml-mcp" if File.exist?(libexec/"bin/kuml-mcp")
     chmod 0755, libexec/"mcp/bin/kuml-mcp" if File.exist?(libexec/"mcp/bin/kuml-mcp")
+    chmod 0755, libexec/"bin/kuml-lsp" if File.exist?(libexec/"bin/kuml-lsp")
+    chmod 0755, libexec/"lsp/bin/kuml-lsp" if File.exist?(libexec/"lsp/bin/kuml-lsp")
     Dir[libexec/"runtime/bin/*"].each { |f| chmod 0755, f }
     chmod 0755, libexec/"runtime/lib/jspawnhelper" if File.exist?(libexec/"runtime/lib/jspawnhelper")
     bin.install_symlink libexec/"bin/kuml"
     bin.install_symlink libexec/"bin/kuml-mcp" if File.exist?(libexec/"bin/kuml-mcp")
+    bin.install_symlink libexec/"bin/kuml-lsp" if File.exist?(libexec/"bin/kuml-lsp")
   end
 
   test do
@@ -80,5 +89,21 @@ class Kuml < Formula
     JSON
     output = pipe_output("#{bin}/kuml-mcp", "#{request}\n", 0)
     assert_match "\"name\":\"kuml-mcp\"", output
+
+    # kuml-lsp speaks the Language Server Protocol (JSON-RPC over stdio,
+    # Content-Length-framed — not bare-line JSON like kuml-mcp above), so the
+    # smoke test frames a minimal `initialize` request by hand and checks the
+    # server answers with its own ServerInfo name. Exercises the bundled-JRE
+    # launcher path (lsp/bin/kuml-lsp) end to end, guarded so it's a no-op on
+    # formula versions built before the lsp/ subtree existed.
+    if File.exist?(bin/"kuml-lsp")
+      lsp_body = <<~JSON.delete("\n")
+        {"jsonrpc":"2.0","id":1,"method":"initialize",
+         "params":{"processId":null,"rootUri":null,"capabilities":{}}}
+      JSON
+      lsp_request = "Content-Length: #{lsp_body.bytesize}\r\n\r\n#{lsp_body}"
+      lsp_output = pipe_output("#{bin}/kuml-lsp", lsp_request, 0)
+      assert_match "\"name\":\"kuml-lsp\"", lsp_output
+    end
   end
 end
