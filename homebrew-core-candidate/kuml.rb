@@ -1,8 +1,8 @@
 class Kuml < Formula
   desc "Kotlin-native UML/SysML/C4 DSL — render, transform, generate diagrams"
   homepage "https://kuml.dev"
-  url "https://github.com/kuml-dev/kUML/releases/download/v0.37.0/kuml-0.37.0.zip"
-  sha256 "dee298c29a123778286b177267b4b102aff534b472469b5c75d16ac39a644ab2"
+  url "https://github.com/kuml-dev/kUML/releases/download/v0.38.0/kuml-0.38.0.zip"
+  sha256 "9a1cda40742e61a5b89a162faab722ccdfacefcfd2a08614a4ed9e396dc128f5"
   license "Apache-2.0"
 
   depends_on "openjdk@21"
