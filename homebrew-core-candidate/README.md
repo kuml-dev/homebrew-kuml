@@ -56,15 +56,26 @@ several blockchain chain adapters). Not a documented hard blocker in
 `docs.brew.sh/Acceptable-Formulae`, but unusually large for a CLI formula and a
 plausible point of reviewer pushback.
 
-## Status: PR open
+## Status: PR closed — notability threshold, not a code issue
 
 **[Homebrew/homebrew-core#294156](https://github.com/Homebrew/homebrew-core/pull/294156)**
-— "kuml 0.38.0 (new formula)", opened 2026-07-20 from `betschwa/homebrew-core` branch
-`kuml-new-formula`. Awaiting maintainer review. AI usage disclosed in the PR per
-homebrew-core's own template checkbox. See
-[[03 Bereiche/kUML/Distribution und Packaging#Weg zu offiziellem Homebrew Core (Homebrew/homebrew-core)]]
-and the 2026-07-20 daily note for full context.
+— "kuml 0.38.0 (new formula)", opened and closed same day, 2026-07-20. A maintainer
+closed it citing `docs.brew.sh/Package-Acceptance-Policy`'s notability thresholds — a
+GitHub project needs 30 forks, 30 watchers, or 75 stars (third-party submission) / 90
+forks, 90 watchers, or 225 stars (self-submission by the project's own author). kUML had
+14 stars, 0 forks, 0 watchers at the time — under every threshold, third-party or
+self-submission.
 
-The `kuml.rb` in this directory is kept in sync with whatever was last submitted — if
-the PR needs updates (new version, reviewer-requested changes), update both this file
-and the PR branch together.
+The formula itself was never criticized: audit/style/test/build-from-source all passed.
+This is purely a project-popularity gate, unrelated to the `distZip` + `openjdk@21` +
+`write_env_script` approach documented above, which remains the correct path *if/when*
+kUML clears the notability bar.
+
+**Until then, `kuml-dev/homebrew-kuml` (this tap) is the only Homebrew channel.** Revisit
+this candidate once kUML's GitHub stats clear the third-party threshold (75+ stars, 30+
+forks, or 30+ watchers) — re-validate against whatever version is current at that point
+(url/sha256 change every release) before resubmitting.
+
+See [[03 Bereiche/kUML/Distribution und Packaging#Weg zu offiziellem Homebrew Core (Homebrew/homebrew-core)]]
+and the 2026-07-20 daily note for full context, including the correction to an earlier
+(incomplete) research pass that missed the Package-Acceptance-Policy page.
