@@ -32,12 +32,14 @@ bin/lib layout, same problem): `libexec.install` the whole tree, then
 existing launcher with an explicit `JAVA_HOME` pointing at the `openjdk@21` keg
 (user-overridable via `HOMEBREW_JAVA_HOME`/`JAVA_HOME`).
 
-## Validated locally (2026-07-20, against v0.37.0)
+## Validated locally (2026-07-20, against v0.38.0)
 
 - `ruby -c kuml.rb` — syntax OK
 - Installed via a temporarily-renamed copy in the tap (`kuml-core-candidate`, to avoid
   colliding with the real `kuml` formula during testing)
-- `brew audit --strict --online` — clean, no findings
+- `HOMEBREW_NO_INSTALL_FROM_API=1 brew install --build-from-source` — succeeds (per
+  homebrew-core's own PR template, not just the API-cached `brew install`)
+- `brew audit --strict --new` — clean, no findings
 - `brew style` — clean, no offenses
 - `brew test` — passes (`kuml --help` runs successfully via the `openjdk@21`-wrapped
   launcher)
@@ -46,18 +48,23 @@ existing launcher with an explicit `JAVA_HOME` pointing at the `openjdk@21` keg
   `openjdk` — the version argument to `overridable_java_home_env` matters for this,
   Homebrew's own docs call out reproducibility as the reason to pass it explicitly
 
-## Known concern to flag in the PR description
+## Known concern, flagged proactively in the PR description
 
 The zip is ~150 MB / ~330 jars — kUML's CLI dependency tree includes things a pure
 diagram-rendering use case doesn't need (Compose Multiplatform pieces, AI provider SDKs,
 several blockchain chain adapters). Not a documented hard blocker in
 `docs.brew.sh/Acceptable-Formulae`, but unusually large for a CLI formula and a
-plausible point of reviewer pushback. Worth pre-empting in the PR description rather
-than waiting for a reviewer to ask.
+plausible point of reviewer pushback.
 
-## Not yet done
+## Status: PR open
 
-- No PR opened against `Homebrew/homebrew-core` yet — pending an explicit decision to do
-  so (see [[03 Bereiche/kUML/Distribution und Packaging]] and the 2026-07-20 daily note).
-- `sha256` above is pinned to v0.37.0; will need updating to whatever version is current
-  at PR time.
+**[Homebrew/homebrew-core#294156](https://github.com/Homebrew/homebrew-core/pull/294156)**
+— "kuml 0.38.0 (new formula)", opened 2026-07-20 from `betschwa/homebrew-core` branch
+`kuml-new-formula`. Awaiting maintainer review. AI usage disclosed in the PR per
+homebrew-core's own template checkbox. See
+[[03 Bereiche/kUML/Distribution und Packaging#Weg zu offiziellem Homebrew Core (Homebrew/homebrew-core)]]
+and the 2026-07-20 daily note for full context.
+
+The `kuml.rb` in this directory is kept in sync with whatever was last submitted — if
+the PR needs updates (new version, reviewer-requested changes), update both this file
+and the PR branch together.
