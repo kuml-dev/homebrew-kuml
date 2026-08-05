@@ -1,6 +1,6 @@
 cask "kuml-desktop" do
-  version "0.46.0"
-  sha256 "2c85e93444db78038bfad27ac187aa13ba294b148c3ac6770923487f8a1013d7"
+  version "0.47.0"
+  sha256 "9e443b7086855227d362d64753163d5d61338a6c4178e23f402bdc7063d0aa33"
 
   # The kuml-desktop-<version>.dmg is built by the `desktop-dmg` job in
   # kuml-dev/kuml's release.yml (V3.2.14) via the Compose Multiplatform
